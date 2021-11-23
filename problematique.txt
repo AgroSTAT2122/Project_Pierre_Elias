@@ -1,4 +1,4 @@
-Problématique : Comment voyager en évitant au mieux les perturbations du traffic ferroviaire ?
+Problématique : Comment voyager en évitant au mieux les perturbations du trafic ferroviaire ?
 
 Pistes de réponses / visualisations :
 	- carte des liaisons (visualiser les retards ou le nombre d'occurences des liaisons)
