@@ -51,41 +51,14 @@ sens %v% "degree" <- degree(sens, gmode = "graph")
 # add random groups
 sens %v% "mygroup" <- y_train[network.vertex.names(sens),"Direction"]
 
-
-# carte des gares
-europa <- ne_countries(scale = "medium", returnclass = "sf") %>%
-  filter(name %in% c("France", "Belgium", "Luxembourg", "Germany", "Spain", "Portugal", "Switzerland", "Italy"))
-
-# france <- ne_countries(scale = "medium", returnclass = "sf") %>%
-#   filter(name == "France")
-
-france_metro <- europa %>% 
-  st_crop(xmin = -9.86, xmax = 10.38, ymin = 39, ymax = 51.56)
-
-ggp <- france_metro %>% 
-  st_transform(crs = 4326) %>%
-  ggplot() + geom_sf() +
-  # geom_point(data = coord, aes(x = Longitude, y = Latitude), shape = 20) +
-  # geom_point(data = g, aes(lon, lat)) +
-  # geom_edges(data = g, aes(lon, lat, xend = xend, yend = yend)) +
-  # geom_nodelabel(data = g, aes(lon, lat, label = vertex.names))
-  # coord_sf(xlim = c(-88, -78), ylim = c(24.5, 33), expand = FALSE)
-  theme_minimal() ; ggp
-
 # create a map of the USA
 europa <- ggplot(test, aes(x = long, y = lat)) +
   geom_polygon(aes(group = group), color = "grey65",
                fill = "#f9f9f9", size = 0.2) +  
   coord_map(xlim = c(-5, 10.5),ylim = c(40, 51)); europa
 
-# delete.vertices(sens, which(sens %v% "lon" < min(ggp$data$long)))
-# delete.vertices(sens, which(sens %v% "lon" > max(usa$data$long)))
-# delete.vertices(sens, which(sens %v% "lat" < min(usa$data$lat)))
-# delete.vertices(sens, which(sens %v% "lat" > max(usa$data$lat)))
-
 # overlay network data to map
 ggnetworkmap(europa, net = sens, size = 10, great.circles = TRUE,
              segment.color = "steelblue", arrow.size = 0,
              node.group = mygroup, alpha = 1,
-             ring.group = degree, weight = degree)
-
+             ring.group = degree, weight = degree, legend)
