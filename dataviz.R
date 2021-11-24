@@ -1,7 +1,13 @@
 # package loading
 library(readr)
 library(tidyverse)
-library(ggnet)C
+
+# network manipulation
+library(GGally)
+library(network)
+library(sna)
+
+# 
 library(sf)
 library(rnaturalearth)
 library(visNetwork)
@@ -21,6 +27,36 @@ train <- train %>%
            (`Number of expected circulations`-`Number of cancelled trains`))
 
 
+
+# liaison map
+# edges: liaisons
+e_train <- train %>% select(`Departure station`, `Arrival station`,
+                            `Number of expected circulations`) %>% 
+  rename(Dep = `Departure station`, Arr = `Arrival station`) %>% 
+  group_by(Dep, Arr) %>% 
+  summarise(Nb = sum(`Number of expected circulations`, na.rm = TRUE))
+
+# weighted directed network (weight = number of expected circulations)
+n_train <- network::network(select(e_train, Dep, Arr), directed = TRUE)
+set.edge.attribute(n_train, "weight", e_train$Nb)
+
+# nodes: stations
+y_train <- coord %>% filter(`Departure station` %in% e_train$Dep |
+                              `Departure station` %in% e_train$Arr) %>% 
+  rename(Station = `Departure station`)
+
+# named geo coordinate vectors...
+lat <- y_train$Latitude
+names(lat) <- y_train$Station
+lon <- y_train$Longitude
+names(lon) <- y_train$Station
+# ... as a (x, y) coordinate matrix
+geo <- cbind(lon[network.vertex.names(n_train)], lat[network.vertex.names(n_train)])
+
+# geographic network
+g <- ggnetwork(n_train, layout = geo, scale = FALSE) %>% 
+  rename(lon = x, lat = y)
+
 # carte des gares
 europa <- ne_countries(scale = "medium", returnclass = "sf") %>%
   filter(name %in% c("France", "Belgium", "Luxembourg", "Germany", "Spain", "Portugal", "Switzerland", "Italy"))
@@ -31,16 +67,17 @@ europa <- ne_countries(scale = "medium", returnclass = "sf") %>%
 france_metro <- europa %>% 
   st_crop(xmin = -9.86, xmax = 10.38, ymin = 39, ymax = 51.56)
 
-france_metro %>% 
+ggp <- france_metro %>% 
   st_transform(crs = 4326) %>%
   ggplot() + geom_sf() +
-  geom_point(data = coord, aes(x = Longitude, y = Latitude), 
-             shape = 20) +
+  geom_point(data = coord, aes(x = Longitude, y = Latitude), shape = 20) +
+  geom_point(data = g, aes(lon, lat)) +
+  geom_edges(data = g, aes(lon, lat, xend = xend, yend = yend)) +
+  # geom_nodelabel(data = g, aes(lon, lat, label = vertex.names))
   # coord_sf(xlim = c(-88, -78), ylim = c(24.5, 33), expand = FALSE)
-  theme_minimal()
+  theme_minimal() ; ggp
 
-# coord %>% filter(`Departure station` %in% train$`Departure station`) %>% 
-#   nrow()
+
 
 ## add date and liaison fields
 train <- train %>% 
@@ -155,4 +192,5 @@ train %>%
         axis.ticks.x = element_blank())
 
 
+# liaison network
 
