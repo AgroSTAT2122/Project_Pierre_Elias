@@ -71,8 +71,8 @@ ggp <- france_metro %>%
   st_transform(crs = 4326) %>%
   ggplot() + geom_sf() +
   geom_point(data = coord, aes(x = Longitude, y = Latitude), shape = 20) +
-  geom_point(data = g, aes(lon, lat)) +
-  geom_edges(data = g, aes(lon, lat, xend = xend, yend = yend)) +
+  # geom_point(data = g, aes(lon, lat)) +
+  # geom_edges(data = g, aes(lon, lat, xend = xend, yend = yend)) +
   # geom_nodelabel(data = g, aes(lon, lat, label = vertex.names))
   # coord_sf(xlim = c(-88, -78), ylim = c(24.5, 33), expand = FALSE)
   theme_minimal() ; ggp
